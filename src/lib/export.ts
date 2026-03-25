@@ -11,6 +11,7 @@ export interface CommentExport {
   username: string;
   text: string;
   date: string;
+  likesCount: number;
   profile_link: string;
   childComments?: ChildCommentExport[];
 }
@@ -23,22 +24,20 @@ export function exportToCSV(data: CommentExport[], filename: string) {
 
   for (const comment of data) {
     rows.push({
-      Tipo: 'Comentário Pai',
-      ID_Pai: '',
-      Usuário: comment.username,
-      'Texto do Comentário': comment.text,
-      Data: comment.date,
+      'Usuário': comment.username,
+      'Comentário': comment.text,
+      'Total de Curtidas': comment.likesCount,
+      'Tipo do Comentário': 'Comentário Pai',
       'Link do Perfil': comment.profile_link,
     });
 
     if (comment.childComments && comment.childComments.length > 0) {
       for (const child of comment.childComments) {
         rows.push({
-          Tipo: 'Resposta',
-          ID_Pai: comment.username,
-          Usuário: child.ownerUsername,
-          'Texto do Comentário': child.text,
-          Data: child.timestamp,
+          'Usuário': child.ownerUsername,
+          'Comentário': child.text,
+          'Total de Curtidas': child.likesCount,
+          'Tipo do Comentário': 'Resposta',
           'Link do Perfil': `https://instagram.com/${child.ownerUsername}`,
         });
       }
@@ -46,7 +45,8 @@ export function exportToCSV(data: CommentExport[], filename: string) {
   }
 
   const csv = Papa.unparse(rows);
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  // Add UTF-8 BOM to fix Excel character encoding
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
 

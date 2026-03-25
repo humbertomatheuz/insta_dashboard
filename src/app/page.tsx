@@ -338,20 +338,24 @@ export default function Home() {
   // ── Export ────────────────────────────────────────────────────────────────
 
   const handleExportSelected = () => {
+    const filename = `${postIdRef.current || shortcodeRef.current || 'export'}_selecionados.csv`;
     exportToCSV(
       filteredComments
         .filter(c => selectedIds.has(c.id))
-        .map(c => ({ username: c.username, text: c.text, date: c.date, profile_link: c.profile_link, childComments: c.childComments })),
-      'selecionados.csv'
+        .map(c => ({
+          username: c.username, text: c.text, date: c.date, likesCount: c.likesCount, profile_link: c.profile_link, childComments: c.childComments
+        })),
+      filename
     );
   };
 
   const handleExportAll = () => {
+    const filename = `${postIdRef.current || shortcodeRef.current || 'export'}_filtrados.csv`;
     exportToCSV(
       filteredComments.map(c => ({
-        username: c.username, text: c.text, date: c.date, profile_link: c.profile_link, childComments: c.childComments,
+        username: c.username, text: c.text, date: c.date, likesCount: c.likesCount, profile_link: c.profile_link, childComments: c.childComments,
       })),
-      'comentarios_filtrados.csv'
+      filename
     );
   };
 
