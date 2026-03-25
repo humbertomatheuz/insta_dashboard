@@ -94,11 +94,21 @@ export default function Home() {
     }
   }, []);
 
-  const fetchMeta = useCallback(async (dsId: string) => {
+  const fetchMeta = useCallback(async (dsId: string, postUrl: string) => {
     try {
-      const res = await fetch(`/api/results?datasetId=${dsId}&meta=1`);
-      const data: PostMeta = await res.json();
-      setMeta(data);
+      // Para pegar os totais do post (como curtidas globais), usamos a nova rota /api/meta
+      // que faz uma chamada sync rápida na task principal do usuário.
+      // E pegamos o total extraído chamando results com meta=1
+      const [metaRes, statsRes] = await Promise.all([
+        fetch(`/api/meta?url=${encodeURIComponent(postUrl)}`),
+        fetch(`/api/results?datasetId=${dsId}&meta=1`)
+      ]);
+      const metaData = await metaRes.json();
+      const statsData = await statsRes.json();
+      setMeta({ 
+        ...metaData, 
+        totalItems: statsData.totalItems || 0 
+      });
     } catch { /* silente */ }
   }, []);
 
@@ -138,7 +148,7 @@ export default function Home() {
           if (statusData.status === 'SUCCEEDED') {
             stopPolling();
             setRunStatus('succeeded');
-            await fetchMeta(dsId);
+            await fetchMeta(dsId, url); // Passa a URL para o fetchMeta buscar no user task
             await fetchResults(dsId, 1, '');
           } else if (['FAILED', 'TIMED-OUT', 'ABORTED'].includes(statusData.status)) {
             stopPolling();

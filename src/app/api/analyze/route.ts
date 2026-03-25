@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 
-// Aumentar timeout máximo da rota (Vercel Pro/Enterprise suporta até 300s)
-export const maxDuration = 30; // Só inicia o run, retorna rápido
+export const maxDuration = 30;
 
 const TOKEN = process.env.APIFY_TOKEN;
-const TASK_ID = 'humbertomatheuz~instagram-scraper-task';
+// Utiliza o ator dedicado para comentários (Apify oficial), que ignora o limite de 15 itens
+const ACTOR_ID = 'apify~instagram-comment-scraper';
 
 export async function POST(request: Request) {
   try {
@@ -14,13 +14,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'URL do Instagram inválida' }, { status: 400 });
     }
 
-    // Inicia run ASSÍNCRONO — retorna imediatamente com runId
+    // Inicia run ASSÍNCRONO no instagram-comment-scraper
     const startRes = await fetch(
-      `https://api.apify.com/v2/actor-tasks/${TASK_ID}/runs?token=${TOKEN}`,
+      `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${TOKEN}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ directUrls: [url] }),
+        body: JSON.stringify({ 
+          directUrls: [url],
+          // Configurações fortes para pegar tudo
+          resultsLimit: 10000, 
+        }),
       }
     );
 
