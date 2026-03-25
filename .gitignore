@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# temporary dev/test scripts
+test_apify*.js
+apify_test*.js
+*_out.txt
