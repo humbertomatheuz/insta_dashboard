@@ -38,7 +38,7 @@
 
 **1. Clone o pacote de análise**
 ```bash
-git clone https://github.com/SEU_USUARIO/insta-dashboard.git
+git clone https://github.com/humbertomatheuz/insta_dashboard.git
 cd insta-dashboard
 ```
 
