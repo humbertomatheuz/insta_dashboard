@@ -279,6 +279,15 @@ export default function Home() {
               <span className="font-semibold">{error}</span>
             </div>
           )}
+
+          {/* Aviso sobre os 15 comentários */}
+          <div className="max-w-2xl mx-auto mt-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/50 glass-card">
+            <span className="font-bold text-amber-500 mb-1 block">⚠️ Limite de 15 comentários?</span>
+            <span className="text-amber-500/80 text-sm">
+              O Instagram trava a extração pública em 1 página (~15). Para raspar os milhares de comentários,
+              você <strong>precisa</strong> ir no painel do Apify, editar a sua Task e inserir os seus <strong>loginCookies</strong> de uma conta real. Sem isso, a API bloqueia a paginação.
+            </span>
+          </div>
         </div>
 
         {/* Progress - Polling */}

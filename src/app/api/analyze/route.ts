@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 export const maxDuration = 30;
 
 const TOKEN = process.env.APIFY_TOKEN;
-// Utiliza o ator dedicado para comentários (Apify oficial), que ignora o limite de 15 itens
-const ACTOR_ID = 'apify~instagram-comment-scraper';
+// Usa a Task do usuário, para manter as configurações de proxy/cookies feitas no painel do Apify
+const TASK_ID = 'humbertomatheuz~instagram-scraper-task';
 
 export async function POST(request: Request) {
   try {
@@ -14,16 +14,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'URL do Instagram inválida' }, { status: 400 });
     }
 
-    // Inicia run ASSÍNCRONO no instagram-comment-scraper
+    // Inicia run ASSÍNCRONO na Task do usuário
     const startRes = await fetch(
-      `https://api.apify.com/v2/acts/${ACTOR_ID}/runs?token=${TOKEN}`,
+      `https://api.apify.com/v2/actor-tasks/${TASK_ID}/runs?token=${TOKEN}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           directUrls: [url],
-          // Configurações fortes para pegar tudo
-          resultsLimit: 10000, 
+          // Omitindo type/limit para respeitar a configuração "resultsType": "comments" salva na Task dele no Apify,
+          // pois isso permite ele customizar na web sem ter o backend sobrescrevendo.
         }),
       }
     );
