@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
-// Usando o Actor de Comentários do Apify diretamente
-const APIFY_ACTOR_URL = `https://api.apify.com/v2/acts/apify~instagram-comment-scraper/run-sync-get-dataset-items?token=${APIFY_TOKEN}`;
+// Usando a Task configurada do usuário
+const APIFY_TASK_URL = `https://api.apify.com/v2/actor-tasks/humbertomatheuz~instagram-scraper-task/run-sync-get-dataset-items?token=${APIFY_TOKEN}`;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapChildComment = (c: any, index: number) => ({
@@ -27,7 +27,7 @@ const mapComment = (c: any, index: number) => ({
     : [],
   profile_link: (c.ownerUsername || c.username)
     ? `https://instagram.com/${c.ownerUsername || c.username}`
-    : '#'
+    : '#',
 });
 
 export async function POST(request: Request) {
@@ -38,15 +38,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'URL do Instagram inválida' }, { status: 400 });
     }
 
-    const apifyResponse = await fetch(APIFY_ACTOR_URL, {
+    // Envia somente a URL — os parâmetros fixos (resultsType, resultsLimit etc.)
+    // já estão configurados como padrão na Task do Apify.
+    const apifyResponse = await fetch(APIFY_TASK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         directUrls: [url],
-        resultsType: 'comments',
-        resultsLimit: 1000,
-        includeChildComments: true,
-        viewParentPost: true,
       }),
     });
 
@@ -80,16 +78,59 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: firstItem.errorDescription || firstItem.error }, { status: 403 });
     }
 
-    // Com viewParentPost: true, os metadados do post vêm em parentData ou diretamente no item
-    const parentData = firstItem?.parentData || firstItem?.postData || firstItem?.inputData || {};
+    // Com addParentData: true na Task, os dados do post pai ficam em cada item
+    const parentData =
+      firstItem?.parentPost ||
+      firstItem?.postData ||
+      firstItem?.parentData ||
+      {};
+
+    // Metadados do post (likes/comments totais)
+    const owner_name =
+      parentData.ownerUsername ||
+      parentData.username ||
+      firstItem?.postOwnerUsername ||
+      'Desconhecido';
+
+    const likes_count =
+      parentData.likesCount ||
+      parentData.likeCount ||
+      firstItem?.postLikesCount ||
+      0;
+
+    // Total real de comentários do post (da API), não apenas os extraídos
+    const comments_count =
+      parentData.commentsCount ||
+      parentData.commentCount ||
+      firstItem?.postCommentsCount ||
+      data.length;
+
+    const thumbnail_url =
+      parentData.displayUrl ||
+      parentData.imageUrl ||
+      parentData.thumbnail ||
+      firstItem?.postUrl ||
+      null;
+
+    const video_url =
+      parentData.videoUrl ||
+      firstItem?.postVideoUrl ||
+      null;
+
+    const caption =
+      parentData.caption ||
+      parentData.text ||
+      firstItem?.postCaption ||
+      '';
 
     const viewData = {
-      owner_name: parentData.ownerUsername || parentData.username || firstItem?.ownerUsername || 'Desconhecido',
-      likes_count: parentData.likesCount || parentData.likeCount || 0,
-      comments_count: parentData.commentsCount || parentData.commentCount || data.length,
-      video_url: parentData.videoUrl || null,
-      thumbnail_url: parentData.displayUrl || parentData.imageUrl || parentData.thumbnail || null,
-      caption: parentData.caption || parentData.text || '',
+      owner_name,
+      likes_count,
+      comments_count,
+      video_url,
+      thumbnail_url,
+      caption,
+      // Todos os comentários extraídos (paginados no frontend)
       comments: data.map(mapComment),
     };
 

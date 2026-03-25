@@ -112,6 +112,7 @@ export default function Home() {
   };
 
   // Filtro recursivo: mostra comentário se ele ou algum filho tiver a keyword
+  // BUSCA NO TOTAL (todos os data.comments, independente de paginação)
   const filteredComments = useMemo(() => {
     if (!data?.comments) return [];
     if (!keyword) return data.comments;
@@ -122,7 +123,7 @@ export default function Home() {
     );
   }, [data?.comments, keyword]);
 
-  // Contagem recursiva de ocorrências (pai + filhos)
+  // Contagem recursiva de ocorrências (pai + filhos) — sobre TODOS os comentários
   const occurrencesCount = useMemo(() => {
     if (!data?.comments || !keyword) return 0;
     return data.comments.reduce((total, c) => {
@@ -133,6 +134,12 @@ export default function Home() {
       return total + count;
     }, 0);
   }, [data?.comments, keyword]);
+
+  // Total de respostas extraídas
+  const totalReplies = useMemo(() => {
+    if (!data?.comments) return 0;
+    return data.comments.reduce((sum, c) => sum + (c.childComments?.length || 0), 0);
+  }, [data?.comments]);
 
   const columns = useMemo<ColumnDef<Comment>[]>(() => [
     {
@@ -456,11 +463,12 @@ export default function Home() {
                     <div className="absolute inset-0 bg-gradient-to-br from-[#bc1888]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <CardHeader className="pb-2 pt-6">
                       <CardTitle className="text-sm font-bold tracking-widest uppercase flex items-center gap-2 text-white/50">
-                        <MessageCircle className="h-5 w-5 text-[#bc1888]" /> Comentários (Extraídos)
+                        <MessageCircle className="h-5 w-5 text-[#bc1888]" /> Comentários (Total)
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-5xl font-black text-white">{data.comments.length.toLocaleString()}</p>
+                      <p className="text-5xl font-black text-white">{data.comments_count.toLocaleString()}</p>
+                      <p className="text-xs text-white/30 mt-1">{data.comments.length.toLocaleString()} extraídos · {totalReplies.toLocaleString()} respostas</p>
                     </CardContent>
                   </Card>
                 </div>
@@ -486,9 +494,9 @@ export default function Home() {
               <Card className="col-span-3 glass-card glass-card-hover border-[#dc2743]/20 flex flex-col justify-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-[#dc2743]/10 rounded-full blur-2xl" />
                 <CardContent className="p-6">
-                  <span className="text-xs font-bold tracking-widest uppercase text-[#dc2743]/60 mb-1 block">Ocorrências Exatas</span>
+                  <span className="text-xs font-bold tracking-widest uppercase text-[#dc2743]/60 mb-1 block">Ocorrências (Todos)</span>
                   <span className="text-4xl font-black text-[#dc2743]">{occurrencesCount}</span>
-                  <span className="text-xs text-white/30 ml-2">(pai + respostas)</span>
+                  <span className="text-xs text-white/30 ml-2 block mt-0.5">em {data.comments.length} comentários + {totalReplies} respostas</span>
                 </CardContent>
               </Card>
 
@@ -497,6 +505,7 @@ export default function Home() {
                 <CardContent className="p-6">
                   <span className="text-xs font-bold tracking-widest uppercase text-[#bc1888]/60 mb-1 block">Comentários Filtrados</span>
                   <span className="text-4xl font-black text-[#bc1888]">{filteredComments.length}</span>
+                  <span className="text-xs text-white/30 ml-2">de {data.comments.length}</span>
                 </CardContent>
               </Card>
             </div>
