@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Outfit, Geist } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -9,8 +12,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Dashboard Neon | Analisador",
-  description: "Analisador moderno de comentários do Instagram com IA e Scraping",
+  title: "Insta Dashboard | Análise de Comentários",
+  description: "Extraia, filtre e analise comentários do Instagram com scroll infinito, paginação e exportação inteligente.",
 };
 
 export default function RootLayout({
@@ -19,12 +22,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang="pt-BR" className={cn("dark", "font-sans", geist.variable)}>
       <body className={`${outfit.variable} font-sans min-h-screen bg-background text-foreground selection:bg-primary/30 selection:text-primary-foreground antialiased relative overflow-x-hidden`}>
-        {/* Elementos de background dinâmico Neon/Glassmorphism */}
-        <div className="fixed top-[-10%] left-[-10%] w-[40rem] h-[40rem] rounded-full bg-primary/20 blur-[120px] mix-blend-screen animate-blob z-[-1]" />
-        <div className="fixed bottom-[-10%] right-[-10%] w-[50rem] h-[50rem] rounded-full bg-secondary/20 blur-[150px] mix-blend-screen animate-blob-slow z-[-1]" />
-        <div className="fixed top-[40%] left-[30%] w-[30rem] h-[30rem] rounded-full bg-accent/20 blur-[100px] mix-blend-screen animate-blob z-[-1]" style={{ animationDelay: '2s' }} />
+        {/* Degrade estático escuro com cores do Instagram */}
+        <div className="fixed inset-0 z-[-2] bg-black" />
+        <div className="fixed top-[-20%] left-[-10%] w-[50rem] h-[50rem] rounded-full bg-[#bc1888]/5 blur-[150px] pointer-events-none z-[-1]" />
+        <div className="fixed bottom-[-20%] right-[-10%] w-[60rem] h-[60rem] rounded-full bg-[#f09433]/5 blur-[150px] pointer-events-none z-[-1]" />
+        <div className="fixed top-[30%] left-[40%] w-[40rem] h-[40rem] rounded-full bg-[#dc2743]/5 blur-[150px] pointer-events-none z-[-1]" />
         
         {/* Noise overlay opcional para textura */}
         <div className="fixed inset-0 z-[-1] opacity-[0.015] pointer-events-none" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/noise-pattern-with-subtle-cross-lines.png")' }} />
